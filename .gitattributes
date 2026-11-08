@@ -1,0 +1,2 @@
+# A CRLF checkout on Windows breaks the #! line when the script runs in WSL
+scripts/* text eol=lf
