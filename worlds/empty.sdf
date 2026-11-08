@@ -40,6 +40,20 @@
     </model>
 
     <!-- A few simple objects for the camera to look at (stand-ins for the barrel/cone/wall in video #8) -->
+    <!-- Obstacle straight ahead of the camera (robot at slider 0, arm 0 sees its front face 1.5 m away).
+         scripts/obstacle_distance.py reports how far away it is. -->
+    <model name="obstacle">
+      <static>true</static>
+      <pose>3.2 1.0 0.5 0 0 0</pose>
+      <link name="link">
+        <collision name="c"><geometry><box><size>0.4 0.6 1.0</size></box></geometry></collision>
+        <visual name="v">
+          <geometry><box><size>0.4 0.6 1.0</size></box></geometry>
+          <material><ambient>0.9 0.1 0.1 1</ambient><diffuse>0.9 0.1 0.1 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
     <model name="orange_barrel">
       <pose>4.5 1.0 0.45 0 0 0</pose>
       <link name="link">
