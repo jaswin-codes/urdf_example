@@ -33,6 +33,12 @@ In a second terminal (after `source install/setup.bash`), move the joints. The s
 ros2 topic pub -1 /set_joint_trajectory trajectory_msgs/msg/JointTrajectory '{joint_names: [slider_joint, arm_joint], points: [{positions: [0.8, 0.6]}]}'
 ```
 
+Or send a timed four-waypoint motion with the included node. Edit `WAYPOINTS` in `scripts/send_trajectory.py` to change it.
+
+```bash
+ros2 run urdf_example send_trajectory.py
+```
+
 To see the robot and camera in RViz:
 
 ```bash
