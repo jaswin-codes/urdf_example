@@ -5,9 +5,8 @@ from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 
-
+from launch.conditions import IfCondition, UnlessCondition
 from launch_ros.actions import Node
-import xacro
 
 
 # Ported from Gazebo Classic (gazebo_ros) to the new Gazebo (ros_gz_sim), following video #10.
@@ -16,14 +15,6 @@ def generate_launch_description():
     # Specify the name of the package and path to xacro file within the package
     pkg_name = 'urdf_example'
     pkg_share = get_package_share_directory(pkg_name)
-    file_subpath = 'description/example_robot.urdf.xacro'
-
-
-    # Use xacro to process the file
-    xacro_file = os.path.join(pkg_share, file_subpath)
-    robot_description_raw = xacro.process_file(xacro_file).toxml()
-
-
     # The world is now passed in explicitly (it used to be passed down by gazebo_ros)
     world = LaunchConfiguration('world')
     world_arg = DeclareLaunchArgument(
@@ -32,24 +23,34 @@ def generate_launch_description():
         description='World file to load')
 
 
-    # Configure the node
-    node_robot_state_publisher = Node(
-        package='robot_state_publisher',
-        executable='robot_state_publisher',
-        output='screen',
-        parameters=[{'robot_description': robot_description_raw,
-        'use_sim_time': True}] # add other parameters here if required
+    # Reuse rsp.launch.py instead of repeating the robot_state_publisher setup here
+    rsp = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(os.path.join(pkg_share, 'launch', 'rsp.launch.py')),
+        launch_arguments={'use_sim_time': 'true'}.items()
     )
+
+
+    # headless:=true runs only the Gazebo server (no window, off-screen rendering for the cameras)
+    headless = LaunchConfiguration('headless')
+    headless_arg = DeclareLaunchArgument(
+        'headless', default_value='false',
+        description='Run Gazebo without the GUI')
 
 
     # gazebo_ros/gazebo.launch.py  ->  ros_gz_sim/gz_sim.launch.py
     # -r runs the simulation straight away, -v4 prints extra debug info
+    gz_sim_launch = PythonLaunchDescriptionSource([os.path.join(
+        get_package_share_directory('ros_gz_sim'), 'launch'), '/gz_sim.launch.py'])
     gazebo = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource([os.path.join(
-            get_package_share_directory('ros_gz_sim'), 'launch'), '/gz_sim.launch.py']),
+        gz_sim_launch,
         launch_arguments={'gz_args': ['-r -v4 ', world],
-                          'on_exit_shutdown': 'true'}.items()
-        )
+                          'on_exit_shutdown': 'true'}.items(),
+        condition=UnlessCondition(headless))
+    gazebo_headless = IncludeLaunchDescription(
+        gz_sim_launch,
+        launch_arguments={'gz_args': ['-r -s --headless-rendering -v4 ', world],
+                          'on_exit_shutdown': 'true'}.items(),
+        condition=IfCondition(headless))
 
 
     # gazebo_ros spawn_entity.py  ->  ros_gz_sim create  (-entity became -name)
@@ -83,8 +84,10 @@ def generate_launch_description():
     # Run the node
     return LaunchDescription([
         world_arg,
+        headless_arg,
         gazebo,
-        node_robot_state_publisher,
+        gazebo_headless,
+        rsp,
         spawn_entity,
         bridge,
         image_bridge

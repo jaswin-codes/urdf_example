@@ -27,6 +27,8 @@ source install/setup.bash
 ros2 launch urdf_example rsp_sim.launch.py
 ```
 
+Add `headless:=true` to run without the Gazebo window (cameras still render off-screen).
+
 In a second terminal (after `source install/setup.bash`), move the joints. The slider range is 0 to 2 m and the arm range is 0 to pi/2 rad.
 
 ```bash
