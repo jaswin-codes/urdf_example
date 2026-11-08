@@ -44,7 +44,7 @@ install(
 )
 
 install(
-  PROGRAMS scripts/send_trajectory.py
+  PROGRAMS scripts/send_trajectory.py scripts/obstacle_distance.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

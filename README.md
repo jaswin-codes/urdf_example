@@ -41,6 +41,13 @@ Or send a timed four-waypoint motion with the included node. Edit `WAYPOINTS` in
 ros2 run urdf_example send_trajectory.py
 ```
 
+Report how far away the obstacle in front of the depth camera is (publishes `std_msgs/Float32` on `/obstacle_distance`: the nearest valid depth in the centre 20% of the image). Slide towards the red box and the number drops.
+
+```bash
+ros2 run urdf_example obstacle_distance.py
+ros2 topic echo /obstacle_distance
+```
+
 To see the robot and camera in RViz:
 
 ```bash
